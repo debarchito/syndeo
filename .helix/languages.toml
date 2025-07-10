@@ -1,0 +1,19 @@
+[language-server.tailwindcss]
+command = "tailwindcss-language-server"
+args = ["--stdio"]
+
+[[language]]
+name = "svelte"
+formatter = { command = "prettier", args = ["--parser", "svelte"] }
+auto-format = true
+language-servers = ["svelteserver", "tailwindcss"]
+
+[[language]]
+name = "javascript"
+formatter = { command = "prettier", args = ["--parser", "typescript"] }
+auto-format = true
+
+[[language]]
+name = "typescript"
+formatter = { command = "prettier", args = ["--parser", "typescript"] }
+auto-format = true

@@ -1,0 +1,66 @@
+{
+  "name": "syndeo",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "start": "pocketbase serve --http=$POCKETBASE_HOST:$POCKETBASE_PORT & node build/index.js",
+    "dev": "pocketbase serve --http=$POCKETBASE_HOST:$POCKETBASE_PORT & vite dev",
+    "build": "vite build",
+    "preview": "pocketbase serve --http=$POCKETBASE_HOST:$POCKETBASE_PORT & vite preview",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "format": "prettier --write .",
+    "lint": "prettier --check . && eslint ."
+  },
+  "dependencies": {
+    "@fontsource/ms-madi": "^5.2.6",
+    "pino": "^9.7.0",
+    "pino-pretty": "^13.0.0",
+    "pocketbase": "^0.26.1",
+    "validator": "^13.15.15"
+  },
+  "devDependencies": {
+    "@eslint/compat": "^1.3.1",
+    "@eslint/js": "^9.30.1",
+    "@internationalized/date": "^3.8.2",
+    "@lucide/svelte": "^0.525.0",
+    "@sveltejs/adapter-node": "^5.2.13",
+    "@sveltejs/kit": "^2.22.4",
+    "@sveltejs/vite-plugin-svelte": "^5.1.0",
+    "@tailwindcss/vite": "^4.1.11",
+    "@types/validator": "^13.15.2",
+    "@zxcvbn-ts/core": "^3.0.4",
+    "@zxcvbn-ts/language-common": "^3.0.4",
+    "@zxcvbn-ts/language-en": "^3.0.2",
+    "bits-ui": "^2.8.10",
+    "clsx": "^2.1.1",
+    "eslint": "^9.30.1",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-svelte": "^3.10.1",
+    "globals": "^16.3.0",
+    "jiti": "^2.4.2",
+    "mode-watcher": "^1.1.0",
+    "prettier": "^3.6.2",
+    "prettier-plugin-sort-imports": "^1.8.8",
+    "prettier-plugin-svelte": "^3.4.0",
+    "prettier-plugin-tailwindcss": "^0.6.14",
+    "runed": "^0.29.2",
+    "svelte": "^5.35.5",
+    "svelte-check": "^4.2.2",
+    "svelte-toolbelt": "^0.9.3",
+    "tailwind-merge": "^3.3.1",
+    "tailwind-variants": "^1.0.0",
+    "tailwindcss": "^4.1.11",
+    "tw-animate-css": "^1.3.5",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.36.0",
+    "vite": "^6.3.5",
+    "vite-plugin-devtools-json": "^0.2.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}
