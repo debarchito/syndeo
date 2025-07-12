@@ -46,12 +46,19 @@ function pocketbase(): Handle {
 
     try {
       if (event.locals.pb.authStore.isValid) {
-        await event.locals.pb.collection("users").authRefresh();
-        event.locals.user = structuredClone(event.locals.pb.authStore.record);
+        const recordType = event.locals.pb.authStore.record?.collectionName || "users";
+        await event.locals.pb.collection(recordType).authRefresh();
+
+        if (recordType === "teachers") {
+          event.locals.teacher = structuredClone(event.locals.pb.authStore.record);
+        } else {
+          event.locals.user = structuredClone(event.locals.pb.authStore.record);
+        }
       }
     } catch {
       event.locals.pb.authStore.clear();
       event.locals.user = null;
+      event.locals.teacher = null;
     }
 
     const response = await resolve(event);

@@ -7,6 +7,7 @@
   import { Label } from "$lib/components/ui/label/index.js";
   import * as Alert from "$lib/components/ui/alert/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
+  import { Checkbox } from "$lib/components/ui/checkbox/index.js";
   import * as Password from "$lib/components/ui/password/index.js";
 
   let { form } = $props();
@@ -48,6 +49,11 @@
                 </Password.Input>
               </Password.Root>
             </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <Checkbox name="isTeacher" id="is-teacher" />
+            <Label for="is-teacher">I am a teacher</Label>
           </div>
 
           <Button type="submit" class="w-full transition-all hover:scale-105">
