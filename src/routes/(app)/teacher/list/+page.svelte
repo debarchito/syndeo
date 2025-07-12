@@ -246,7 +246,7 @@
           <Card.Root
             class="group cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
           >
-            <a href={`/teacher/${teacher.id}`} class="block h-full">
+            <a href={`/teacher/t/${teacher.id}`} class="block h-full">
               <Card.CardHeader class="pb-4">
                 <div class="flex items-start gap-3">
                   <div

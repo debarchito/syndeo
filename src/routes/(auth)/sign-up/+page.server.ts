@@ -5,7 +5,7 @@ import isEmail from "validator/lib/isEmail";
 
 const getRedirectUrl = (url: URL) => {
   const redirectTo = url.searchParams.get("redirect-to");
-  return redirectTo ? `/${redirectTo.slice(1)}` : "/explore";
+  return redirectTo ? `/${redirectTo.slice(1)}` : "/teacher/list";
 };
 
 export const load: PageServerLoad = async ({ locals, url }) => {
