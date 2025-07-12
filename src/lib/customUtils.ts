@@ -3,3 +3,10 @@ export function isValidPassword(password: string) {
     password,
   );
 }
+export function isValidName(name: string) {
+  return isValidDisplayName(name) && /^[a-z0-9_-]+$/.test(name);
+}
+
+export function isValidDisplayName(name: string) {
+  return name.length >= 3 && name.length <= 255;
+}

@@ -12,6 +12,7 @@
 
   let { form } = $props();
   let url = new URL(page.url);
+  let isTeacher = $state(false);
 </script>
 
 <svelte:head>
@@ -52,13 +53,13 @@
           </div>
 
           <div class="flex items-center gap-3">
-            <Checkbox name="isTeacher" id="is-teacher" />
+            <Checkbox bind:checked={isTeacher} name="isTeacher" id="is-teacher" />
             <Label for="is-teacher">I am a teacher</Label>
           </div>
 
           <Button type="submit" class="w-full transition-all hover:scale-105">
             <Lucide.LogIn />
-            Sign In
+            Sign in as a {isTeacher ? "teacher" : "student"}
           </Button>
         </form>
 
