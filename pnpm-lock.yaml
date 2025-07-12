@@ -37,8 +37,8 @@ importers:
         specifier: ^3.8.2
         version: 3.8.2
       '@lucide/svelte':
-        specifier: ^0.525.0
-        version: 0.525.0(svelte@5.35.6)
+        specifier: ^0.515.0
+        version: 0.515.0(svelte@5.35.6)
       '@sveltejs/adapter-node':
         specifier: ^5.2.13
         version: 5.2.13(@sveltejs/kit@2.22.5(@sveltejs/vite-plugin-svelte@5.1.0(svelte@5.35.6)(vite@6.3.5(@types/node@24.0.12)(jiti@2.4.2)(lightningcss@1.30.1)))(svelte@5.35.6)(vite@6.3.5(@types/node@24.0.12)(jiti@2.4.2)(lightningcss@1.30.1)))
@@ -132,6 +132,9 @@ importers:
       typescript-eslint:
         specifier: ^8.36.0
         version: 8.36.0(eslint@9.30.1(jiti@2.4.2))(typescript@5.8.3)
+      vaul-svelte:
+        specifier: 1.0.0-next.7
+        version: 1.0.0-next.7(svelte@5.35.6)
       vite:
         specifier: ^6.3.5
         version: 6.3.5(@types/node@24.0.12)(jiti@2.4.2)(lightningcss@1.30.1)
@@ -404,8 +407,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.29':
     resolution: {integrity: sha512-uw6guiW/gcAGPDhLmd77/6lW8QLeiV5RUTsAX46Db6oLhGaVj4lhnPwb184s1bkc8kdVg/+h988dro8GRDpmYQ==}
 
-  '@lucide/svelte@0.525.0':
-    resolution: {integrity: sha512-dyUxkXzepagLUzL8jHQNdeH286nC66ClLACsg+Neu/bjkRJWPWMzkT+H0DKlE70QdkicGCfs1ZGmXCc351hmZA==}
+  '@lucide/svelte@0.515.0':
+    resolution: {integrity: sha512-CEAyqcZmNBfYzVgaRmK2RFJP5tnbXxekRyDk0XX/eZQRfsJmkDvmQwXNX8C869BgNeryzmrRyjHhUL6g9ZOHNA==}
     peerDependencies:
       svelte: ^5
 
@@ -1977,6 +1980,12 @@ packages:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
     engines: {node: '>= 0.8'}
 
+  vaul-svelte@1.0.0-next.7:
+    resolution: {integrity: sha512-7zN7Bi3dFQixvvbUJY9uGDe7Ws/dGZeBQR2pXdXmzQiakjrxBvWo0QrmsX3HK+VH+SZOltz378cmgmCS9f9rSg==}
+    engines: {node: '>=18', pnpm: '>=8.7.0'}
+    peerDependencies:
+      svelte: ^5.0.0
+
   vite-plugin-devtools-json@0.2.1:
     resolution: {integrity: sha512-5aiNvf/iLTuLR1dUqoI5CLLGgeK2hd6u+tA+RIp7GUZDyAcM6ECaUEWOOtGpidbcxbkKq++KtmSqA3jhMbPwMA==}
     peerDependencies:
@@ -2242,7 +2251,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.4
 
-  '@lucide/svelte@0.525.0(svelte@5.35.6)':
+  '@lucide/svelte@0.515.0(svelte@5.35.6)':
     dependencies:
       svelte: 5.35.6
 
@@ -3769,6 +3778,12 @@ snapshots:
   validator@13.15.15: {}
 
   vary@1.1.2: {}
+
+  vaul-svelte@1.0.0-next.7(svelte@5.35.6):
+    dependencies:
+      runed: 0.23.4(svelte@5.35.6)
+      svelte: 5.35.6
+      svelte-toolbelt: 0.7.1(svelte@5.35.6)
 
   vite-plugin-devtools-json@0.2.1(vite@6.3.5(@types/node@24.0.12)(jiti@2.4.2)(lightningcss@1.30.1)):
     dependencies:

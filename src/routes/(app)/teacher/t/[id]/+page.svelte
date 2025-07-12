@@ -204,7 +204,7 @@
             {/if}
 
             <div class="flex justify-center">
-              <Button onclick={handleRequestAppointment} size="default">
+              <Button onclick={handleRequestAppointment} size="default" class="cursor-pointer">
                 <Lucide.Calendar class="size-4" />
                 Request Appointment
               </Button>
