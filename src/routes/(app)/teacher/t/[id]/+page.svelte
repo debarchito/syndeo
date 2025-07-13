@@ -1,12 +1,57 @@
 <script lang="ts">
   import { cn } from "$lib/utils";
+  import { enhance } from "$app/forms";
   import { goto } from "$app/navigation";
+  import { page } from "$app/state";
   import * as Lucide from "@lucide/svelte";
+  import type { DateRange } from "bits-ui";
   import * as Card from "$lib/components/ui/card/index.js";
+  import { Badge } from "$lib/components/ui/badge/index.js";
+  import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import * as Popover from "$lib/components/ui/popover/index.js";
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
+  import { Textarea } from "$lib/components/ui/textarea/index.js";
   import { LightSwitch } from "$lib/components/ui/light-switch/index.js";
   import { Button, buttonVariants } from "$lib/components/ui/button/index.js";
+  import { RangeCalendar } from "$lib/components/ui/range-calendar/index.js";
+  import { DateFormatter, type DateValue, getLocalTimeZone, today } from "@internationalized/date";
+  import { redirectToMeOnSignIn } from "$lib/customUtils.js";
+
   let { data } = $props();
+
+  const df = new DateFormatter("en-US", { dateStyle: "medium" });
+
+  let value: DateRange = $state({
+    start: today(getLocalTimeZone()),
+    end: today(getLocalTimeZone()).add({ days: 1 }),
+  });
+  let startValue: DateValue | undefined = $state(undefined);
+  let description = $state("");
+  let submitting = $state(false);
+  let showConfirmDialog = $state(false);
+  let showResultDialog = $state(false);
+  let resultMessage = $state("");
+  let isSuccess = $state(false);
+
+  const isSignedIn = data.payload?.user || data.payload?.teacher;
+
+  function toDateString(d?: DateValue) {
+    return d?.toDate(getLocalTimeZone()).toISOString().split("T")[0];
+  }
+
+  function handleSubmit() {
+    if (!isSignedIn) {
+      goto(redirectToMeOnSignIn(page.url));
+      return;
+    }
+    showConfirmDialog = true;
+  }
+
+  function confirmSubmit() {
+    showConfirmDialog = false;
+    const form = document.getElementById("appointment-form") as HTMLFormElement;
+    form.requestSubmit();
+  }
 
   function getTagVariant(type: string) {
     switch (type) {
@@ -20,25 +65,23 @@
         return "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-300 dark:border-gray-400";
     }
   }
-
-  function handleRequestAppointment() {
-    console.log("Request appointment for:", data.payload?.target.name);
-  }
 </script>
 
 <svelte:head>
-  {#if data.status != 200}
-    <title>{data.status} | syndeo.</title>?
+  {#if data.status !== 200}
+    <title>{data.status} | syndeo.</title>
   {:else}
-    <title>{data.payload?.target.displayName || data.payload?.target.name} | syndeo.</title>
+    <title
+      >Book Appointment with {data.payload?.target.displayName || data.payload?.target.name} | syndeo.</title
+    >
   {/if}
 </svelte:head>
 
-{#if data.status == 200}
+{#if data.status === 200 && data.payload}
   <div class="bg-background min-h-screen">
     <div class="container mx-auto px-4 py-4 md:py-6">
-      <div class="mx-auto max-w-2xl">
-        <div class="mb-4 flex items-center justify-between">
+      <div class="mx-auto max-w-6xl">
+        <div class="mb-6 flex items-center justify-between">
           <div class="flex items-center gap-2 md:gap-3">
             <Button
               onclick={() => goto("/teacher/list")}
@@ -48,7 +91,7 @@
             >
               <Lucide.ArrowLeft class="size-3 md:size-4" />
             </Button>
-            <h1 class="text-lg font-bold md:text-xl">Profile</h1>
+            <h1 class="text-lg font-bold md:text-xl">Book Appointment</h1>
           </div>
 
           <div class="flex items-center gap-2">
@@ -60,7 +103,8 @@
                   >
                     {#if data.payload?.user || data.payload?.teacher}
                       {(data.payload?.user?.name ||
-                        data.payload?.teacher?.name ||
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (data.payload?.teacher as any).name ||
                         "U")[0].toUpperCase()}
                     {:else}
                       <Lucide.UserX class="size-4" />
@@ -72,7 +116,8 @@
                     {data.payload?.user
                       ? `Signed in as @${data.payload?.user.name}`
                       : data.payload?.teacher
-                        ? `Signed in as @${data.payload?.teacher.name}`
+                        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                          `Signed in as @${(data.payload?.teacher as any).name}`
                         : "You are currently not signed in"}
                   </p>
                 </Tooltip.Content>
@@ -112,108 +157,274 @@
           </div>
         </div>
 
-        <Card.Root class="w-full shadow-sm">
-          <Card.Content class="p-4 md:p-6">
-            <div class="mb-6 flex flex-col items-center gap-3 text-center md:flex-row md:text-left">
-              <div
-                class="bg-primary/10 text-primary flex size-12 items-center justify-center rounded-full text-lg font-medium md:size-14 md:text-xl"
-              >
-                {data.payload?.target.name[0].toUpperCase()}
+        <div class="grid gap-6 lg:grid-cols-2">
+          <!-- Teacher Details Card -->
+          <Card.Root class="shadow-md">
+            <Card.Content class="p-6">
+              <div class="mb-4 flex items-center gap-4">
+                <div
+                  class="bg-primary/10 text-primary flex size-12 items-center justify-center rounded-full text-lg font-medium"
+                >
+                  {data.payload?.target.name[0].toUpperCase()}
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h2 class="text-xl font-bold">
+                    {data.payload?.target.displayName || data.payload?.target.name}
+                  </h2>
+                  <p class="text-muted-foreground text-sm">
+                    @{data.payload?.target.name}
+                  </p>
+                </div>
               </div>
-              <div class="min-w-0 flex-1">
-                <h2 class="text-lg font-bold md:text-xl">
-                  {data.payload?.target.displayName || data.payload?.target.name}
-                </h2>
-                <p class="text-muted-foreground text-sm md:text-base">
-                  @{data.payload?.target.name}
+
+              <div class="mb-4">
+                <h3 class="mb-2 text-sm font-semibold">About</h3>
+                <p class="text-muted-foreground text-sm leading-relaxed">
+                  {data.payload?.target.description || "No description available."}
                 </p>
               </div>
-            </div>
 
-            <div class="mb-6">
-              <h3 class="mb-2 text-base font-semibold">About</h3>
-              <p class="text-muted-foreground text-sm leading-relaxed">
-                {data.payload?.target.description || "No description available."}
-              </p>
-            </div>
+              {#if data.payload?.target.expand?.tags && data.payload?.target.expand.tags.length > 0}
+                {@const departmentTags = data.payload?.target.expand.tags.filter(
+                  (tag: { type: string }) => tag.type === "department",
+                )}
+                {@const subjectTags = data.payload?.target.expand.tags.filter(
+                  (tag: { type: string }) => tag.type === "subject",
+                )}
+                {@const classTags = data.payload?.target.expand.tags.filter(
+                  (tag: { type: string }) => tag.type === "class",
+                )}
 
-            {#if data.payload?.target.expand?.tags && data.payload?.target.expand.tags.length > 0}
-              {@const departmentTags = data.payload?.target.expand.tags.filter(
-                (tag: { type: string }) => tag.type === "department",
-              )}
-              {@const subjectTags = data.payload?.target.expand.tags.filter(
-                (tag: { type: string }) => tag.type === "subject",
-              )}
-              {@const classTags = data.payload?.target.expand.tags.filter(
-                (tag: { type: string }) => tag.type === "class",
-              )}
-
-              {#if departmentTags.length > 0}
-                <div class="mb-6">
-                  <h3 class="mb-2 text-base font-semibold">Departments</h3>
-                  <div class="flex flex-wrap gap-1.5">
-                    {#each departmentTags as tag (tag.id)}
-                      <span
-                        class={cn(
-                          "rounded-full border px-2 py-1 text-xs font-medium",
-                          getTagVariant(tag.type),
-                        )}
-                      >
-                        {tag.name}
-                      </span>
-                    {/each}
+                {#if departmentTags.length > 0}
+                  <div class="mb-4">
+                    <h3 class="mb-2 text-sm font-semibold">Departments</h3>
+                    <div class="flex flex-wrap gap-1">
+                      {#each departmentTags as tag (tag.id)}
+                        <span
+                          class={cn(
+                            "rounded-full border px-2 py-1 text-xs font-medium",
+                            getTagVariant(tag.type),
+                          )}
+                        >
+                          {tag.name}
+                        </span>
+                      {/each}
+                    </div>
                   </div>
-                </div>
-              {/if}
+                {/if}
 
-              {#if subjectTags.length > 0}
-                <div class="mb-6">
-                  <h3 class="mb-2 text-base font-semibold">Subjects</h3>
-                  <div class="flex flex-wrap gap-1.5">
-                    {#each subjectTags as tag (tag.id)}
-                      <span
-                        class={cn(
-                          "rounded-full border px-2 py-1 text-xs font-medium",
-                          getTagVariant(tag.type),
-                        )}
-                      >
-                        {tag.name}
-                      </span>
-                    {/each}
+                {#if subjectTags.length > 0}
+                  <div class="mb-4">
+                    <h3 class="mb-2 text-sm font-semibold">Subjects</h3>
+                    <div class="flex flex-wrap gap-1">
+                      {#each subjectTags as tag (tag.id)}
+                        <span
+                          class={cn(
+                            "rounded-full border px-2 py-1 text-xs font-medium",
+                            getTagVariant(tag.type),
+                          )}
+                        >
+                          {tag.name}
+                        </span>
+                      {/each}
+                    </div>
                   </div>
-                </div>
-              {/if}
+                {/if}
 
-              {#if classTags.length > 0}
-                <div class="mb-6">
-                  <h3 class="mb-2 text-base font-semibold">Classes</h3>
-                  <div class="flex flex-wrap gap-1.5">
-                    {#each classTags as tag (tag.id)}
-                      <span
-                        class={cn(
-                          "rounded-full border px-2 py-1 text-xs font-medium",
-                          getTagVariant(tag.type),
-                        )}
-                      >
-                        {tag.name}
-                      </span>
-                    {/each}
+                {#if classTags.length > 0}
+                  <div class="mb-4">
+                    <h3 class="mb-2 text-sm font-semibold">Classes</h3>
+                    <div class="flex flex-wrap gap-1">
+                      {#each classTags as tag (tag.id)}
+                        <span
+                          class={cn(
+                            "rounded-full border px-2 py-1 text-xs font-medium",
+                            getTagVariant(tag.type),
+                          )}
+                        >
+                          {tag.name}
+                        </span>
+                      {/each}
+                    </div>
                   </div>
-                </div>
+                {/if}
               {/if}
-            {/if}
+            </Card.Content>
+          </Card.Root>
 
-            <div class="flex justify-center">
-              <Button onclick={handleRequestAppointment} size="default" class="cursor-pointer">
-                <Lucide.Calendar class="size-4" />
-                Request Appointment
-              </Button>
-            </div>
-          </Card.Content>
-        </Card.Root>
+          <Card.Root class="shadow-md">
+            <Card.Content class="p-6">
+              <form
+                id="appointment-form"
+                method="post"
+                use:enhance={() => {
+                  submitting = true;
+                  return ({ result }) => {
+                    submitting = false;
+                    if (result.type === "success") {
+                      isSuccess = true;
+                      resultMessage =
+                        (result.data?.message as string) ||
+                        "Appointment request submitted successfully!";
+                      showResultDialog = true;
+                    } else if (result.type === "failure") {
+                      isSuccess = false;
+                      resultMessage = (result.data?.message as string) || "An error occurred";
+                      showResultDialog = true;
+                    }
+                  };
+                }}
+                class="grid gap-4"
+              >
+                <input type="hidden" name="recipient" value={data.payload?.target.id} />
+                <input type="hidden" name="startsOn" value={toDateString(value?.start)} />
+                <input type="hidden" name="endsOn" value={toDateString(value?.end)} />
+
+                <div class="grid gap-2">
+                  <label
+                    class="mb-1 text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    for="date-range"
+                  >
+                    Select schedule
+                  </label>
+                  <Popover.Root>
+                    <Popover.Trigger
+                      class={cn(
+                        buttonVariants({ variant: "outline" }),
+                        "h-10 w-full justify-start px-3 text-left font-normal",
+                        !value && "text-muted-foreground",
+                      )}
+                    >
+                      <Lucide.Calendar class="mr-2 size-4" />
+                      {#if value?.start}
+                        {#if value.end}
+                          {df.format(value.start.toDate(getLocalTimeZone()))} – {df.format(
+                            value.end.toDate(getLocalTimeZone()),
+                          )}
+                        {:else}
+                          {df.format(value.start.toDate(getLocalTimeZone()))}
+                        {/if}
+                      {:else if startValue}
+                        {df.format(startValue.toDate(getLocalTimeZone()))}
+                      {:else}
+                        Pick a date range
+                      {/if}
+                    </Popover.Trigger>
+                    <Popover.Content class="w-auto p-0" align="start">
+                      <RangeCalendar
+                        bind:value
+                        onStartValueChange={(v) => (startValue = v)}
+                        numberOfMonths={2}
+                        minValue={today(getLocalTimeZone())}
+                      />
+                    </Popover.Content>
+                  </Popover.Root>
+                </div>
+
+                <div class="grid gap-2">
+                  <label
+                    class="mb-1 text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    for="description"
+                  >
+                    Description <Badge>optional</Badge>
+                  </label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    rows={4}
+                    bind:value={description}
+                    placeholder="Give the teacher some context about your appointment request..."
+                    class="max-h-[300px] min-h-[100px]"
+                  />
+                </div>
+
+                <Button
+                  type="button"
+                  onclick={handleSubmit}
+                  disabled={submitting || !value?.start || !value?.end}
+                  class="w-full transition-all hover:scale-105"
+                >
+                  {#if submitting}
+                    <Lucide.Loader2 class="mr-1 size-4 animate-spin" />
+                    Submitting...
+                  {:else}
+                    <Lucide.LogIn class="mr-1 size-4" />
+                    {isSignedIn ? "Submit Request" : "Sign in to continue"}
+                  {/if}
+                </Button>
+              </form>
+            </Card.Content>
+          </Card.Root>
+        </div>
       </div>
     </div>
   </div>
+
+  <Dialog.Root bind:open={showConfirmDialog}>
+    <Dialog.Content class="sm:max-w-[425px]">
+      <Dialog.Header>
+        <Dialog.Title>Confirm Appointment Request</Dialog.Title>
+        <Dialog.Description>
+          Are you sure you want to submit this appointment request?
+        </Dialog.Description>
+      </Dialog.Header>
+      <div class="grid gap-4 py-4">
+        <div class="space-y-2">
+          <p class="text-sm font-medium">Teacher:</p>
+          <p class="text-muted-foreground text-sm">
+            {data.payload?.target.displayName || data.payload?.target.name}
+          </p>
+        </div>
+        <div class="space-y-2">
+          <p class="text-sm font-medium">Schedule:</p>
+          <p class="text-muted-foreground text-sm">
+            {#if value?.start && value?.end}
+              {df.format(value.start.toDate(getLocalTimeZone()))} – {df.format(
+                value.end.toDate(getLocalTimeZone()),
+              )}
+            {/if}
+          </p>
+        </div>
+        {#if description}
+          <div class="space-y-2">
+            <p class="text-sm font-medium">Description:</p>
+            <p class="text-muted-foreground text-sm">{description.slice(0, 50)}...</p>
+          </div>
+        {/if}
+      </div>
+      <Dialog.Footer>
+        <Button variant="outline" onclick={() => (showConfirmDialog = false)}>Cancel</Button>
+        <Button onclick={confirmSubmit}>Confirm Request</Button>
+      </Dialog.Footer>
+    </Dialog.Content>
+  </Dialog.Root>
+
+  <!-- Result Dialog -->
+  <Dialog.Root bind:open={showResultDialog}>
+    <Dialog.Content class="sm:max-w-[425px]">
+      <Dialog.Header>
+        <Dialog.Title>
+          {#if isSuccess}
+            <div class="flex items-center gap-2">
+              <Lucide.CheckCircle class="size-5 text-green-600" />
+              Success
+            </div>
+          {:else}
+            <div class="flex items-center gap-2">
+              <Lucide.AlertCircle class="size-5 text-red-600" />
+              Error
+            </div>
+          {/if}
+        </Dialog.Title>
+        <Dialog.Description>
+          {resultMessage}
+        </Dialog.Description>
+      </Dialog.Header>
+      <Dialog.Footer>
+        <Button onclick={() => (showResultDialog = false)}>Close</Button>
+      </Dialog.Footer>
+    </Dialog.Content>
+  </Dialog.Root>
 {:else}
   <div class="flex min-h-screen items-center justify-center p-4">
     <Card.Root class="w-full max-w-md shadow-sm">

@@ -213,7 +213,10 @@
           >
             <Lucide.Minus class="size-3" />
           </Button>
-          <span class="px-3 py-1 text-sm font-medium">{perPage} teachers</span>
+          <span class="px-3 py-1 text-sm font-medium">
+            {perPage}
+            <span class="hidden sm:inline">teachers</span>
+          </span>
           <Button
             onclick={() => updatePerPage(perPage + 1)}
             variant="ghost"
