@@ -71,9 +71,9 @@
   {#if data.status !== 200}
     <title>{data.status} | syndeo.</title>
   {:else}
-    <title
-      >Book Appointment with {data.payload?.target.displayName || data.payload?.target.name} | syndeo.</title
-    >
+    <title>
+      {data.payload?.target.displayName || data.payload?.target.name} | syndeo.
+    </title>
   {/if}
 </svelte:head>
 
@@ -91,7 +91,7 @@
             >
               <Lucide.ArrowLeft class="size-3 md:size-4" />
             </Button>
-            <h1 class="text-lg font-bold md:text-xl">Book Appointment</h1>
+            <h1 class="text-lg font-bold md:text-xl">Profile</h1>
           </div>
 
           <div class="flex items-center gap-2">
@@ -158,7 +158,6 @@
         </div>
 
         <div class="grid gap-6 lg:grid-cols-2">
-          <!-- Teacher Details Card -->
           <Card.Root class="shadow-md">
             <Card.Content class="p-6">
               <div class="mb-4 flex items-center gap-4">
@@ -200,14 +199,15 @@
                     <h3 class="mb-2 text-sm font-semibold">Departments</h3>
                     <div class="flex flex-wrap gap-1">
                       {#each departmentTags as tag (tag.id)}
-                        <span
+                        <a
                           class={cn(
                             "rounded-full border px-2 py-1 text-xs font-medium",
                             getTagVariant(tag.type),
                           )}
+                          href="/teacher/list?t={tag.name.replace(/\s+/gm, '+')}"
                         >
                           {tag.name}
-                        </span>
+                        </a>
                       {/each}
                     </div>
                   </div>
@@ -218,14 +218,15 @@
                     <h3 class="mb-2 text-sm font-semibold">Subjects</h3>
                     <div class="flex flex-wrap gap-1">
                       {#each subjectTags as tag (tag.id)}
-                        <span
+                        <a
                           class={cn(
                             "rounded-full border px-2 py-1 text-xs font-medium",
                             getTagVariant(tag.type),
                           )}
+                          href="/teacher/list?t={tag.name.replace(/\s+/gm, '+')}"
                         >
                           {tag.name}
-                        </span>
+                        </a>
                       {/each}
                     </div>
                   </div>
@@ -236,14 +237,15 @@
                     <h3 class="mb-2 text-sm font-semibold">Classes</h3>
                     <div class="flex flex-wrap gap-1">
                       {#each classTags as tag (tag.id)}
-                        <span
+                        <a
                           class={cn(
                             "rounded-full border px-2 py-1 text-xs font-medium",
                             getTagVariant(tag.type),
                           )}
+                          href="/teacher/list?t={tag.name.replace(/\s+/gm, '+')}"
                         >
                           {tag.name}
-                        </span>
+                        </a>
                       {/each}
                     </div>
                   </div>
@@ -294,6 +296,7 @@
                         "h-10 w-full justify-start px-3 text-left font-normal",
                         !value && "text-muted-foreground",
                       )}
+                      disabled={!isSignedIn}
                     >
                       <Lucide.Calendar class="mr-2 size-4" />
                       {#if value?.start}
@@ -335,6 +338,7 @@
                     bind:value={description}
                     placeholder="Give the teacher some context about your appointment request..."
                     class="max-h-[300px] min-h-[100px]"
+                    disabled={!isSignedIn}
                   />
                 </div>
 
@@ -345,11 +349,14 @@
                   class="w-full transition-all hover:scale-105"
                 >
                   {#if submitting}
-                    <Lucide.Loader2 class="mr-1 size-4 animate-spin" />
+                    <Lucide.Loader2 class="size-4 animate-spin" />
                     Submitting...
+                  {:else if isSignedIn}
+                    <Lucide.Check class="size-4" />
+                    Submit Request
                   {:else}
-                    <Lucide.LogIn class="mr-1 size-4" />
-                    {isSignedIn ? "Submit Request" : "Sign in to continue"}
+                    <Lucide.LogIn class="size-4" />
+                    Sign in to continue
                   {/if}
                 </Button>
               </form>
@@ -393,13 +400,18 @@
         {/if}
       </div>
       <Dialog.Footer>
-        <Button variant="outline" onclick={() => (showConfirmDialog = false)}>Cancel</Button>
-        <Button onclick={confirmSubmit}>Confirm Request</Button>
+        <Button variant="outline" onclick={() => (showConfirmDialog = false)}>
+          <Lucide.X class="size-4" />
+          Cancel
+        </Button>
+        <Button onclick={confirmSubmit}>
+          <Lucide.Check class="size-4" />
+          Confirm Request
+        </Button>
       </Dialog.Footer>
     </Dialog.Content>
   </Dialog.Root>
 
-  <!-- Result Dialog -->
   <Dialog.Root bind:open={showResultDialog}>
     <Dialog.Content class="sm:max-w-[425px]">
       <Dialog.Header>
