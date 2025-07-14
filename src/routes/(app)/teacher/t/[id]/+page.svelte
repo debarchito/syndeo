@@ -7,6 +7,8 @@
   import type { DateRange } from "bits-ui";
   import * as Card from "$lib/components/ui/card/index.js";
   import { Badge } from "$lib/components/ui/badge/index.js";
+  import { redirectToMeOnSignIn } from "$lib/customUtils.js";
+  import * as Alert from "$lib/components/ui/alert/index.js";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
@@ -15,7 +17,6 @@
   import { Button, buttonVariants } from "$lib/components/ui/button/index.js";
   import { RangeCalendar } from "$lib/components/ui/range-calendar/index.js";
   import { DateFormatter, type DateValue, getLocalTimeZone, today } from "@internationalized/date";
-  import { redirectToMeOnSignIn } from "$lib/customUtils.js";
 
   let { data } = $props();
 
@@ -33,7 +34,7 @@
   let resultMessage = $state("");
   let isSuccess = $state(false);
 
-  const isSignedIn = data.payload?.user || data.payload?.teacher;
+  const isSignedIn = data.payload?.user;
 
   function toDateString(d?: DateValue) {
     return d?.toDate(getLocalTimeZone()).toISOString().split("T")[0];
@@ -137,7 +138,11 @@
               <Tooltip.Root>
                 <Tooltip.Trigger
                   onclick={() =>
-                    goto(data.payload?.user || data.payload?.teacher ? "/sign-out" : "/sign-in")}
+                    goto(
+                      data.payload?.user || data.payload?.teacher
+                        ? redirectToMeOnSignIn(page.url, "/sign-out")
+                        : redirectToMeOnSignIn(page.url),
+                    )}
                   class={cn(
                     buttonVariants({ variant: "outline" }),
                     "flex h-9 w-9 items-center justify-center rounded-md border shadow-sm transition-shadow hover:shadow-md",
@@ -345,20 +350,36 @@
                 <Button
                   type="button"
                   onclick={handleSubmit}
-                  disabled={submitting || !value?.start || !value?.end}
+                  disabled={submitting || !value?.start || !value?.end || !isSignedIn}
                   class="w-full transition-all hover:scale-105"
                 >
                   {#if submitting}
                     <Lucide.Loader2 class="size-4 animate-spin" />
                     Submitting...
-                  {:else if isSignedIn}
+                  {:else}
                     <Lucide.Check class="size-4" />
                     Submit Request
-                  {:else}
-                    <Lucide.LogIn class="size-4" />
-                    Sign in to continue
                   {/if}
                 </Button>
+
+                {#if !data.payload?.user}
+                  <Alert.Root>
+                    <Lucide.CircleAlert />
+                    <Alert.Title>Students only!</Alert.Title>
+                    <Alert.Description>
+                      Only students can send appointments to teachers.
+                    </Alert.Description>
+                  </Alert.Root>
+                {:else if !isSignedIn}
+                  <Alert.Root>
+                    <Lucide.CircleAlert />
+                    <Alert.Title>Sign in to continue</Alert.Title>
+                    <Alert.Description class="flex items-center gap-1">
+                      You must be signed in to request an appointment.
+                      <a href={redirectToMeOnSignIn(page.url)} class="underline"> Sign in </a>
+                    </Alert.Description>
+                  </Alert.Root>
+                {/if}
               </form>
             </Card.Content>
           </Card.Root>

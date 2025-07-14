@@ -3,14 +3,18 @@ import { isValidPassword } from "$lib/customUtils.js";
 import { redirect, fail } from "@sveltejs/kit";
 import isEmail from "validator/lib/isEmail";
 
-const getRedirectUrl = (url: URL) => {
+const getRedirectUrl = (url: URL, isTeacher: boolean) => {
   const redirectTo = url.searchParams.get("redirect-to");
-  return redirectTo ? `/${redirectTo.slice(1)}` : "/teacher/list";
+  return redirectTo
+    ? `/${redirectTo.slice(1)}`
+    : isTeacher
+      ? "/teacher/dashboard"
+      : "/teacher/list";
 };
 
 export const load: PageServerLoad = async ({ locals, url }) => {
   if (locals.user || locals.teacher) {
-    return redirect(307, getRedirectUrl(url));
+    return redirect(307, getRedirectUrl(url, !!locals.teacher));
   }
 
   return {};
@@ -46,6 +50,6 @@ export const actions: Actions = {
       return fail(500, { message: "An unexpected error occurred. Please try again later." });
     }
 
-    return redirect(307, getRedirectUrl(url));
+    return redirect(307, getRedirectUrl(url, isTeacher));
   },
 };

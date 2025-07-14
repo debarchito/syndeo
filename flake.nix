@@ -19,6 +19,7 @@
         { pkgs, ... }:
         {
           devShells.default = pkgs.mkShellNoCC {
+            name = "syndeo";
             packages = [
               pkgs.mkcert
               pkgs.nodejs-slim_24
