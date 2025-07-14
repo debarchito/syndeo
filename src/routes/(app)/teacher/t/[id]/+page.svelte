@@ -1,8 +1,8 @@
 <script lang="ts">
   import { cn } from "$lib/utils";
+  import { page } from "$app/state";
   import { enhance } from "$app/forms";
   import { goto } from "$app/navigation";
-  import { page } from "$app/state";
   import * as Lucide from "@lucide/svelte";
   import type { DateRange } from "bits-ui";
   import * as Card from "$lib/components/ui/card/index.js";
@@ -11,9 +11,9 @@
   import * as Alert from "$lib/components/ui/alert/index.js";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
-  import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import { Textarea } from "$lib/components/ui/textarea/index.js";
   import { LightSwitch } from "$lib/components/ui/light-switch/index.js";
+  import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import { Button, buttonVariants } from "$lib/components/ui/button/index.js";
   import { RangeCalendar } from "$lib/components/ui/range-calendar/index.js";
   import { DateFormatter, type DateValue, getLocalTimeZone, today } from "@internationalized/date";
@@ -96,69 +96,62 @@
           </div>
 
           <div class="flex items-center gap-2">
-            <Tooltip.Provider>
-              <Tooltip.Root>
-                <Tooltip.Trigger>
-                  <div
-                    class="bg-primary/10 text-primary flex h-9 w-9 items-center justify-center rounded-full text-sm"
-                  >
-                    {#if data.payload?.user || data.payload?.teacher}
-                      {(data.payload?.user?.name ||
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        (data.payload?.teacher as any).name ||
-                        "U")[0].toUpperCase()}
-                    {:else}
-                      <Lucide.UserX class="size-4" />
-                    {/if}
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger>
+                {#snippet child({ props })}
+                  <Button {...props} variant="ghost" size="icon" class="h-9 w-9">
+                    <div
+                      class="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-full text-xs"
+                    >
+                      {#if data.payload?.user || data.payload?.teacher}
+                        {(data.payload?.user?.name ||
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                          (data.payload?.teacher as any).name ||
+                          "U")[0].toUpperCase()}
+                      {:else}
+                        <Lucide.UserX class="size-3" />
+                      {/if}
+                    </div>
+                  </Button>
+                {/snippet}
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Content class="w-56" align="end">
+                <DropdownMenu.Label>
+                  {data.payload.user
+                    ? `Signed in as @${data.payload.user.name}`
+                    : data.payload.teacher
+                      ? `Signed in as @${data.payload.teacher.name}`
+                      : "Not signed in"}
+                </DropdownMenu.Label>
+                <DropdownMenu.Separator />
+                <DropdownMenu.Item>
+                  <div class="flex items-center gap-2">
+                    <Lucide.Palette class="size-4" />
+                    <span>Theme</span>
                   </div>
-                </Tooltip.Trigger>
-                <Tooltip.Content>
-                  <p>
-                    {data.payload?.user
-                      ? `Signed in as @${data.payload?.user.name}`
-                      : data.payload?.teacher
-                        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                          `Signed in as @${(data.payload?.teacher as any).name}`
-                        : "You are currently not signed in"}
-                  </p>
-                </Tooltip.Content>
-              </Tooltip.Root>
-            </Tooltip.Provider>
-
-            <Tooltip.Provider>
-              <Tooltip.Root>
-                <Tooltip.Trigger>
-                  <div class="flex h-9 items-center"><LightSwitch /></div>
-                </Tooltip.Trigger>
-                <Tooltip.Content><p>Switch theme</p></Tooltip.Content>
-              </Tooltip.Root>
-            </Tooltip.Provider>
-
-            <Tooltip.Provider>
-              <Tooltip.Root>
-                <Tooltip.Trigger
+                  <div class="ml-auto">
+                    <LightSwitch />
+                  </div>
+                </DropdownMenu.Item>
+                <DropdownMenu.Separator />
+                <DropdownMenu.Item
                   onclick={() =>
                     goto(
                       data.payload?.user || data.payload?.teacher
                         ? redirectToMeOnSignIn(page.url, "/sign-out")
                         : redirectToMeOnSignIn(page.url),
                     )}
-                  class={cn(
-                    buttonVariants({ variant: "outline" }),
-                    "flex h-9 w-9 items-center justify-center rounded-md border shadow-sm transition-shadow hover:shadow-md",
-                  )}
                 >
                   {#if data.payload?.user || data.payload?.teacher}
                     <Lucide.LogOut class="size-4" />
+                    Sign out
                   {:else}
                     <Lucide.LogIn class="size-4" />
+                    Sign in
                   {/if}
-                </Tooltip.Trigger>
-                <Tooltip.Content>
-                  <p>{data.payload?.user || data.payload?.teacher ? "Sign out" : "Sign in"}</p>
-                </Tooltip.Content>
-              </Tooltip.Root>
-            </Tooltip.Provider>
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu.Root>
           </div>
         </div>
 

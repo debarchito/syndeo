@@ -6,10 +6,10 @@
   import * as Card from "$lib/components/ui/card/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import { TagsInput } from "$lib/components/ui/tags-input";
-  import * as Tooltip from "$lib/components/ui/tooltip/index.js";
+  import { Button } from "$lib/components/ui/button/index.js";
   import * as Pagination from "$lib/components/ui/pagination/index.js";
   import { LightSwitch } from "$lib/components/ui/light-switch/index.js";
-  import { Button, buttonVariants } from "$lib/components/ui/button/index.js";
+  import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
 
   const { data } = $props();
 
@@ -104,60 +104,56 @@
       </a>
 
       <div class="flex items-center gap-2">
-        <Tooltip.Provider>
-          <Tooltip.Root>
-            <Tooltip.Trigger>
-              <div
-                class="bg-primary/10 text-primary flex h-9 w-9 items-center justify-center rounded-full text-sm"
-              >
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger>
+            {#snippet child({ props })}
+              <Button {...props} variant="ghost" size="icon" class="h-9 w-9">
+                <div
+                  class="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-full text-sm"
+                >
+                  {#if data.user || data.teacher}
+                    {(data.user?.name || data.teacher?.name || "U")[0].toUpperCase()}
+                  {:else}
+                    <Lucide.UserX class="size-3" />
+                  {/if}
+                </div>
+              </Button>
+            {/snippet}
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content class="w-56" align="end">
+            <DropdownMenu.Label>
+              {data.user
+                ? `Signed in as @${data.user.name}`
+                : data.teacher
+                  ? `Signed in as @${data.teacher.name}`
+                  : "Not signed in"}
+            </DropdownMenu.Label>
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item>
+              <div class="flex items-center gap-2">
+                <Lucide.Palette class="size-4" />
+                <span>Switch theme</span>
+              </div>
+              <div class="ml-auto">
+                <LightSwitch />
+              </div>
+            </DropdownMenu.Item>
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item
+              onclick={() => goto(data.user || data.teacher ? "/sign-out" : "/sign-in")}
+            >
+              <div class="flex items-center gap-2">
                 {#if data.user || data.teacher}
-                  {(data.user?.name || data.teacher?.name || "U")[0].toUpperCase()}
+                  <Lucide.LogOut class="size-4" />
+                  <span>Sign out</span>
                 {:else}
-                  <Lucide.UserX class="size-4" />
+                  <Lucide.LogIn class="size-4" />
+                  <span>Sign in</span>
                 {/if}
               </div>
-            </Tooltip.Trigger>
-            <Tooltip.Content>
-              <p>
-                {data.user
-                  ? `Signed in as @${data.user.name}`
-                  : data.teacher
-                    ? `Signed in as @${data.teacher.name}`
-                    : "You are currently not signed in"}
-              </p>
-            </Tooltip.Content>
-          </Tooltip.Root>
-        </Tooltip.Provider>
-
-        <Tooltip.Provider>
-          <Tooltip.Root>
-            <Tooltip.Trigger>
-              <div class="flex h-9 items-center"><LightSwitch /></div>
-            </Tooltip.Trigger>
-            <Tooltip.Content><p>Switch theme</p></Tooltip.Content>
-          </Tooltip.Root>
-        </Tooltip.Provider>
-
-        <Tooltip.Provider>
-          <Tooltip.Root>
-            <Tooltip.Trigger
-              onclick={() => goto(data.user || data.teacher ? "/sign-out" : "/sign-in")}
-              class={cn(
-                buttonVariants({ variant: "outline" }),
-                "flex h-9 w-9 items-center justify-center rounded-md border shadow-sm transition-shadow hover:shadow-md",
-              )}
-            >
-              {#if data.user || data.teacher}
-                <Lucide.LogOut class="size-4" />
-              {:else}
-                <Lucide.LogIn class="size-4" />
-              {/if}
-            </Tooltip.Trigger>
-            <Tooltip.Content>
-              <p>{data.user || data.teacher ? "Sign out" : "Sign in"}</p>
-            </Tooltip.Content>
-          </Tooltip.Root>
-        </Tooltip.Provider>
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu.Root>
       </div>
     </div>
 
