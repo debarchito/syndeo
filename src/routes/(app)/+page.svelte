@@ -1,2 +1,55 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script>
+  import * as Lucide from "@lucide/svelte";
+  import { Button } from "$lib/components/ui/button";
+  import * as Tooltip from "$lib/components/ui/tooltip/index.js";
+  import { LightSwitch } from "$lib/components/ui/light-switch/index.js";
+</script>
+
+<svelte:head>
+  <title>Welcome to ping.</title>
+</svelte:head>
+
+<div class="flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+  <div class="flex w-full max-w-sm flex-col items-center gap-6 text-center">
+    <div class="font-ms-madi flex items-center gap-2 self-center text-6xl font-medium select-none">
+      <div
+        class="bg-primary text-primary-foreground flex size-8 transform items-center justify-center rounded-full shadow-md transition-transform duration-200 hover:scale-105"
+      >
+        <Lucide.CalendarSync class="size-5" />
+      </div>
+      <span class="mr-4 mb-4">syndeo.</span>
+
+      <Tooltip.Provider>
+        <Tooltip.Root>
+          <Tooltip.Trigger>
+            <div class="flex h-9 items-center">
+              <LightSwitch />
+            </div>
+          </Tooltip.Trigger>
+          <Tooltip.Content>
+            <p>Switch theme</p>
+          </Tooltip.Content>
+        </Tooltip.Root>
+      </Tooltip.Provider>
+    </div>
+
+    <div class="mt-4 grid w-full grid-cols-1 gap-4 text-sm">
+      <div
+        class="bg-muted/90 dark:bg-muted/10 flex items-center gap-3 rounded-lg p-3 transition-transform select-none hover:scale-102"
+      >
+        <Lucide.MessageCircle class="text-primary size-5" />
+        <span>Simple appointments</span>
+      </div>
+      <div
+        class="bg-muted/90 dark:bg-muted/10 flex items-center gap-3 rounded-lg p-3 transition-transform select-none hover:scale-102"
+      >
+        <Lucide.Zap class="text-primary size-5" />
+        <span>Refreshingly elegant and fast..!</span>
+      </div>
+    </div>
+
+    <Button href="/sign-in" class="mt-4 flex items-center gap-2 transition-all hover:scale-105">
+      <Lucide.ArrowRight class="size-4" /> Get started
+    </Button>
+  </div>
+</div>
