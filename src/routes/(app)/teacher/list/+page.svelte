@@ -6,6 +6,7 @@
   import * as Card from "$lib/components/ui/card/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import { TagsInput } from "$lib/components/ui/tags-input";
+  import { redirectToMeOnSignIn } from "$lib/customUtils.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Pagination from "$lib/components/ui/pagination/index.js";
   import { LightSwitch } from "$lib/components/ui/light-switch/index.js";
@@ -138,9 +139,20 @@
                 <LightSwitch />
               </div>
             </DropdownMenu.Item>
+            <DropdownMenu.Item onclick={() => goto("/dashboard")}>
+              <div class="flex items-center gap-2">
+                <Lucide.LayoutDashboard class="size-4" />
+                <span>Dashboard</span>
+              </div>
+            </DropdownMenu.Item>
             <DropdownMenu.Separator />
             <DropdownMenu.Item
-              onclick={() => goto(data.user || data.teacher ? "/sign-out" : "/sign-in")}
+              onclick={() =>
+                goto(
+                  data.user || data.teacher
+                    ? redirectToMeOnSignIn(page.url, "/sign-out")
+                    : redirectToMeOnSignIn(page.url),
+                )}
             >
               <div class="flex items-center gap-2">
                 {#if data.user || data.teacher}

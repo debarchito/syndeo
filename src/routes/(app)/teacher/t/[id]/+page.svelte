@@ -134,6 +134,13 @@
                   </div>
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator />
+                <DropdownMenu.Item onclick={() => goto("/dashboard")}>
+                  <div class="flex items-center gap-2">
+                    <Lucide.LayoutDashboard class="size-4" />
+                    <span>Dashboard</span>
+                  </div>
+                </DropdownMenu.Item>
+                <DropdownMenu.Separator />
                 <DropdownMenu.Item
                   onclick={() =>
                     goto(
