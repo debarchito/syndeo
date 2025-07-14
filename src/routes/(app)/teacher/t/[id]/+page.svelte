@@ -270,9 +270,10 @@
                     submitting = false;
                     if (result.type === "success") {
                       isSuccess = true;
-                      resultMessage =
-                        (result.data?.message as string) ||
-                        "Appointment request submitted successfully!";
+                      resultMessage = (result.data?.message as string)
+                        ? (result.data?.message as string).trim() +
+                          " Return to your dashboard to keep track of your appointments and messages."
+                        : "Appointment request submitted successfully! Return to your dashboard to keep track of your appointments and messages.";
                       showResultDialog = true;
                     } else if (result.type === "failure") {
                       isSuccess = false;
