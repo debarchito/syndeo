@@ -1,0 +1,107 @@
+/** @type {import("../pb_data/types.d.ts") */
+migrate(
+  (app) => {
+    const collection = app.findCollectionByNameOrId("pbc_3139472174");
+
+    return app.delete(collection);
+  },
+  (app) => {
+    const collection = new Collection({
+      createRule: '@request.auth.collectionName = "users"',
+      deleteRule: null,
+      fields: [
+        {
+          autogeneratePattern: "[a-z0-9]{15}",
+          hidden: false,
+          id: "text3208210256",
+          max: 15,
+          min: 15,
+          name: "id",
+          pattern: "^[a-z0-9]+$",
+          presentable: false,
+          primaryKey: true,
+          required: true,
+          system: true,
+          type: "text",
+        },
+        {
+          cascadeDelete: true,
+          collectionId: "pbc_3614170744",
+          hidden: false,
+          id: "relation1745156937",
+          maxSelect: 1,
+          minSelect: 0,
+          name: "recipient",
+          presentable: false,
+          required: true,
+          system: false,
+          type: "relation",
+        },
+        {
+          autogeneratePattern: "",
+          hidden: false,
+          id: "text4274335913",
+          max: 255,
+          min: 0,
+          name: "content",
+          pattern: "",
+          presentable: false,
+          primaryKey: false,
+          required: true,
+          system: false,
+          type: "text",
+        },
+        {
+          hidden: false,
+          id: "select2363381545",
+          maxSelect: 1,
+          name: "type",
+          presentable: false,
+          required: true,
+          system: false,
+          type: "select",
+          values: ["schedule", "message", "cancelled", "dropped"],
+        },
+        {
+          hidden: false,
+          id: "bool2555855207",
+          name: "read",
+          presentable: false,
+          required: false,
+          system: false,
+          type: "bool",
+        },
+        {
+          hidden: false,
+          id: "autodate2990389176",
+          name: "created",
+          onCreate: true,
+          onUpdate: false,
+          presentable: false,
+          system: false,
+          type: "autodate",
+        },
+        {
+          hidden: false,
+          id: "autodate3332085495",
+          name: "updated",
+          onCreate: true,
+          onUpdate: true,
+          presentable: false,
+          system: false,
+          type: "autodate",
+        },
+      ],
+      id: "pbc_3139472174",
+      indexes: [],
+      listRule: "recipient.id = @request.auth.id",
+      name: "teacher_notifications",
+      system: false,
+      type: "base",
+      updateRule: null,
+      viewRule: "recipient.id = @request.auth.id",
+    });
+
+    return app.save(collection);
+  },
+);

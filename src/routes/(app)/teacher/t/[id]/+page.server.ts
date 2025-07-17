@@ -47,8 +47,6 @@ export const actions: Actions = {
     }
 
     try {
-      // TODO: Run it in a transaction in future using hooks
-
       await locals.pb.collection("appointments").create({
         sender: locals.user.id,
         recipient,
@@ -58,14 +56,7 @@ export const actions: Actions = {
         status: "pending",
       });
 
-      await locals.pb.collection("teacher_notifications").create({
-        recipient,
-        content: `${locals.user.name} requested for an appointment.`,
-        type: "schedule",
-      });
-
       return { message: "Appointment request sent successfully." };
-
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       locals.logger.error(err);
