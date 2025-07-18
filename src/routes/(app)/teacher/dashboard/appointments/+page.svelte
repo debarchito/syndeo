@@ -200,51 +200,51 @@
         <div class="space-y-4">
           {#if data.activeAppointments && data.activeAppointments.length > 0}
             {#each data.activeAppointments as appointment (appointment.id)}
-              <Card.Root class="shadow-md">
+              <Card.Root class="transition-shadow duration-200 hover:shadow-lg">
                 <Card.Content class="p-4 md:p-6">
-                  <div class="flex items-start gap-3">
+                  <div class="flex items-start gap-4">
                     <div
-                      class="flex size-10 items-center justify-center rounded-full bg-blue-100 text-blue-800"
+                      class="bg-primary/10 text-primary flex size-12 flex-shrink-0 items-center justify-center rounded-full"
                     >
-                      <Lucide.Calendar class="size-5" />
+                      <Lucide.Calendar class="size-6" />
                     </div>
-                    <div class="flex-1">
-                      <div class="flex items-center justify-between gap-2">
-                        <div class="flex items-center gap-2">
-                          <h3 class="text-sm font-semibold md:text-base">
-                            {appointment.expand?.sender?.name || "Unknown Student"}
-                          </h3>
-                        </div>
+                    <div class="min-w-0 flex-1">
+                      <div class="mb-1 flex items-center justify-between gap-2">
+                        <h3 class="truncate text-base font-semibold md:text-lg">
+                          {appointment.expand?.sender?.name || "Unknown Student"}
+                        </h3>
+                        {#if currentStatus === "pending"}
+                          <div class="flex items-center gap-1">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              class="h-8 w-8"
+                              onclick={() => handleAction(appointment, "accept")}
+                            >
+                              <Lucide.Check class="size-4" />
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              class="h-8 w-8"
+                              onclick={() => handleAction(appointment, "reject")}
+                            >
+                              <Lucide.X class="size-4" />
+                            </Button>
+                          </div>
+                        {/if}
                       </div>
-                      <p class="text-muted-foreground text-sm md:text-base">
-                        {appointment.description || "No subject"}
-                      </p>
-                      <p class="text-muted-foreground text-xs md:text-sm">
-                        {new Date(appointment.created).toLocaleDateString()} at {new Date(
-                          appointment.created,
-                        ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                      </p>
+                      <div class="mt-2 space-y-1">
+                        <p class="text-muted-foreground/80 bg-muted/30 rounded px-2 py-1 text-sm">
+                          {appointment.description || "No subject"}
+                        </p>
+                        <p class="text-muted-foreground mt-2 text-sm">
+                          {new Date(appointment.created).toLocaleDateString()} at {new Date(
+                            appointment.created,
+                          ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      </div>
                     </div>
-                    {#if currentStatus === "pending"}
-                      <div class="flex items-center gap-1">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          class="h-8 w-8"
-                          onclick={() => handleAction(appointment, "accept")}
-                        >
-                          <Lucide.Check class="size-4" />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          class="h-8 w-8"
-                          onclick={() => handleAction(appointment, "reject")}
-                        >
-                          <Lucide.X class="size-4" />
-                        </Button>
-                      </div>
-                    {/if}
                   </div>
 
                   <form

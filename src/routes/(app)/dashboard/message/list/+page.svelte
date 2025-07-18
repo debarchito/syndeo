@@ -151,7 +151,7 @@
                         </h3>
                       </div>
                       <p class="text-muted-foreground text-sm">
-                        Started {new Date(room.created).toLocaleDateString()} at {new Date(
+                        {new Date(room.created).toLocaleDateString()} at {new Date(
                           room.created,
                         ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       </p>
