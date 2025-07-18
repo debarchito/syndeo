@@ -9,18 +9,27 @@
   import { redirectToMeOnSignIn } from "$lib/customUtils.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import { getLocalTimeZone, today, type CalendarDate } from "@internationalized/date";
   import * as Pagination from "$lib/components/ui/pagination/index.js";
   import { LightSwitch } from "$lib/components/ui/light-switch/index.js";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
+  import Calendar from "$lib/components/ui/calendar/calendar.svelte";
+  import * as Popover from "$lib/components/ui/popover/index.js";
+  import { Label } from "$lib/components/ui/label/index.js";
 
   const { data } = $props();
 
   let showConfirmDialog = $state(false);
   let showResultDialog = $state(false);
+  let showCalendarDialog = $state(false);
   let selectedAppointment = $state() as RecordModel;
   let selectedAction = $state("");
   let resultMessage = $state("");
   let isSuccess = $state(false);
+  let startDate = $state<CalendarDate | undefined>(today(getLocalTimeZone()));
+  let endDate = $state<CalendarDate | undefined>(today(getLocalTimeZone()).add({ days: 1 }));
+  let startDateOpen = $state(false);
+  let endDateOpen = $state(false);
 
   const currentPage = $derived(data.page);
   const currentStatus = $derived(data.status || "pending");
@@ -33,13 +42,38 @@
     showConfirmDialog = true;
   }
 
+  function handleCalendarAction(appointment: RecordModel) {
+    selectedAppointment = appointment;
+    showCalendarDialog = true;
+  }
+
   function confirmAction() {
     showConfirmDialog = false;
     const form = document.getElementById(
-      `appointment-form-${selectedAppointment.id}`,
+      `schedule-action-form-${selectedAppointment.id}`,
     ) as HTMLFormElement;
     if (form) {
       form.submit();
+    }
+  }
+
+  function confirmCalendarAction() {
+    showCalendarDialog = false;
+
+    const scheduleForm = document.getElementById(
+      `update-schedule-form-${selectedAppointment.id}`,
+    ) as HTMLFormElement;
+
+    const startsOnInput = scheduleForm.querySelector('input[name="startsOn"]') as HTMLInputElement;
+    const endsOnInput = scheduleForm.querySelector('input[name="endsOn"]') as HTMLInputElement;
+
+    if (startsOnInput && endsOnInput && startDate && endDate) {
+      startsOnInput.value = startDate.toString();
+      endsOnInput.value = endDate.toString();
+    }
+
+    if (scheduleForm) {
+      scheduleForm.submit();
     }
   }
 
@@ -71,6 +105,18 @@
         p: 1,
       }),
     );
+  }
+
+  function formatDateTime(dateString: string) {
+    const date = new Date(dateString);
+    return {
+      date: date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }),
+      time: date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    };
   }
 </script>
 
@@ -219,6 +265,14 @@
                               variant="outline"
                               size="icon"
                               class="h-8 w-8"
+                              onclick={() => handleCalendarAction(appointment)}
+                            >
+                              <Lucide.CalendarDays class="size-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              class="h-8 w-8"
                               onclick={() => handleAction(appointment, "accept")}
                             >
                               <Lucide.Check class="size-4" />
@@ -234,22 +288,47 @@
                           </div>
                         {/if}
                       </div>
-                      <div class="mt-2 space-y-1">
+                      <div class="mt-2 space-y-2">
                         <p class="text-muted-foreground/80 bg-muted/30 rounded px-2 py-1 text-sm">
                           {appointment.description || "No subject"}
                         </p>
-                        <p class="text-muted-foreground mt-2 text-sm">
-                          {new Date(appointment.created).toLocaleDateString()} at {new Date(
+                        <div class="space-y-2 rounded-lg border p-3">
+                          <div class="flex items-center gap-2">
+                            <Lucide.Clock class="size-4" />
+                            <span class="text-sm font-medium">Scheduled Time</span>
+                          </div>
+                          <div class="space-y-1 text-sm">
+                            <div class="flex items-center gap-2">
+                              <Lucide.Play class="size-3" />
+                              <span
+                                >Starts: {formatDateTime(appointment.startsOn).date} at {formatDateTime(
+                                  appointment.startsOn,
+                                ).time}</span
+                              >
+                            </div>
+                            <div class="flex items-center gap-2">
+                              <Lucide.Square class="size-3" />
+                              <span
+                                >Ends: {formatDateTime(appointment.endsOn).date} at {formatDateTime(
+                                  appointment.endsOn,
+                                ).time}</span
+                              >
+                            </div>
+                          </div>
+                        </div>
+                        <p class="text-muted-foreground text-sm">
+                          Requested on {formatDateTime(appointment.created).date} at {formatDateTime(
                             appointment.created,
-                          ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          ).time}
                         </p>
                       </div>
                     </div>
                   </div>
 
                   <form
-                    id={`appointment-form-${appointment.id}`}
+                    id={`schedule-action-form-${appointment.id}`}
                     method="POST"
+                    action="?/schedule-action"
                     style="display: none;"
                     use:enhance={() => {
                       return async ({ result }) => {
@@ -268,6 +347,31 @@
                     <input type="hidden" name="action" value={selectedAction} />
                     <input type="hidden" name="id" value={appointment.id} />
                     <input type="hidden" name="senderId" value={appointment.expand?.sender.id} />
+                  </form>
+
+                  <form
+                    id={`update-schedule-form-${appointment.id}`}
+                    method="POST"
+                    action="?/update-schedule"
+                    style="display: none;"
+                    use:enhance={() => {
+                      return async ({ result }) => {
+                        if (result.type === "success") {
+                          isSuccess = true;
+                          resultMessage =
+                            (result.data?.message as string) ||
+                            "Appointment schedule updated successfully";
+                        } else {
+                          isSuccess = false;
+                          resultMessage = "Failed to update appointment schedule";
+                        }
+                        showResultDialog = true;
+                      };
+                    }}
+                  >
+                    <input type="hidden" name="id" value={appointment.id} />
+                    <input type="hidden" name="startsOn" value="" />
+                    <input type="hidden" name="endsOn" value="" />
                   </form>
                 </Card.Content>
               </Card.Root>
@@ -375,6 +479,93 @@
           <Lucide.X class="size-4" />
           Reject
         {/if}
+      </Button>
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
+
+<Dialog.Root bind:open={showCalendarDialog}>
+  <Dialog.Content class="sm:max-w-[500px]">
+    <Dialog.Header>
+      <Dialog.Title>Schedule Appointment</Dialog.Title>
+      <Dialog.Description>Select new dates for the appointment and accept it.</Dialog.Description>
+    </Dialog.Header>
+    <div class="grid gap-4 py-4">
+      <div class="space-y-2">
+        <p class="text-sm font-medium">Student</p>
+        <p class="text-muted-foreground text-sm">
+          {selectedAppointment?.expand?.sender?.name || "Unknown Student"}
+        </p>
+      </div>
+      <div class="space-y-2">
+        <p class="text-sm font-medium">Subject</p>
+        <p class="text-muted-foreground text-sm">
+          {selectedAppointment?.description || "No subject"}
+        </p>
+      </div>
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div class="flex flex-col gap-3">
+          <Label>Start Date</Label>
+          <Popover.Root bind:open={startDateOpen}>
+            <Popover.Trigger>
+              {#snippet child({ props })}
+                <Button {...props} variant="outline" class="w-full justify-between font-normal">
+                  {startDate
+                    ? startDate.toDate(getLocalTimeZone()).toLocaleDateString()
+                    : "Select start date"}
+                  <Lucide.ChevronDown class="size-4" />
+                </Button>
+              {/snippet}
+            </Popover.Trigger>
+            <Popover.Content class="w-auto overflow-hidden p-0" align="start">
+              <Calendar
+                type="single"
+                bind:value={startDate}
+                captionLayout="dropdown"
+                onValueChange={() => {
+                  startDateOpen = false;
+                }}
+                minValue={today(getLocalTimeZone())}
+              />
+            </Popover.Content>
+          </Popover.Root>
+        </div>
+        <div class="flex flex-col gap-3">
+          <Label>End Date</Label>
+          <Popover.Root bind:open={endDateOpen}>
+            <Popover.Trigger>
+              {#snippet child({ props })}
+                <Button {...props} variant="outline" class="w-full justify-between font-normal">
+                  {endDate
+                    ? endDate.toDate(getLocalTimeZone()).toLocaleDateString()
+                    : "Select end date"}
+                  <Lucide.ChevronDown class="size-4" />
+                </Button>
+              {/snippet}
+            </Popover.Trigger>
+            <Popover.Content class="w-auto overflow-hidden p-0" align="start">
+              <Calendar
+                type="single"
+                bind:value={endDate}
+                captionLayout="dropdown"
+                onValueChange={() => {
+                  endDateOpen = false;
+                }}
+                minValue={startDate || today(getLocalTimeZone())}
+              />
+            </Popover.Content>
+          </Popover.Root>
+        </div>
+      </div>
+    </div>
+    <Dialog.Footer>
+      <Button variant="outline" onclick={() => (showCalendarDialog = false)}>
+        <Lucide.X class="size-4" />
+        Cancel
+      </Button>
+      <Button onclick={confirmCalendarAction}>
+        <Lucide.Check class="size-4" />
+        Update and accept
       </Button>
     </Dialog.Footer>
   </Dialog.Content>

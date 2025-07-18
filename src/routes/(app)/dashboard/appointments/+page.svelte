@@ -70,6 +70,18 @@
       }),
     );
   }
+
+  function formatDateTime(dateString: string) {
+    const date = new Date(dateString);
+    return {
+      date: date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }),
+      time: date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    };
+  }
 </script>
 
 <svelte:head>
@@ -230,14 +242,38 @@
                           </Button>
                         {/if}
                       </div>
-                      <div class="mt-2 space-y-1">
+                      <div class="mt-2 space-y-2">
                         <p class="text-muted-foreground/80 bg-muted/30 rounded px-2 py-1 text-sm">
                           {appointment.description || "No subject"}
                         </p>
-                        <p class="text-muted-foreground mt-2 text-sm">
-                          {new Date(appointment.created).toLocaleDateString()} at {new Date(
+                        <div class="space-y-2 rounded-lg border p-3">
+                          <div class="flex items-center gap-2">
+                            <Lucide.Clock class="size-4" />
+                            <span class="text-sm font-medium">Scheduled Time</span>
+                          </div>
+                          <div class="space-y-1 text-sm">
+                            <div class="flex items-center gap-2">
+                              <Lucide.Play class="size-3" />
+                              <span
+                                >Starts: {formatDateTime(appointment.startsOn).date} at {formatDateTime(
+                                  appointment.startsOn,
+                                ).time}</span
+                              >
+                            </div>
+                            <div class="flex items-center gap-2">
+                              <Lucide.Square class="size-3" />
+                              <span
+                                >Ends: {formatDateTime(appointment.endsOn).date} at {formatDateTime(
+                                  appointment.endsOn,
+                                ).time}</span
+                              >
+                            </div>
+                          </div>
+                        </div>
+                        <p class="text-muted-foreground text-sm">
+                          Requested on {formatDateTime(appointment.created).date} at {formatDateTime(
                             appointment.created,
-                          ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          ).time}
                         </p>
                       </div>
                     </div>
@@ -354,6 +390,23 @@
           {selectedAppointment?.description || "No subject"}
         </p>
       </div>
+      {#if selectedAppointment?.startsOn && selectedAppointment?.endsOn}
+        <div class="space-y-2">
+          <p class="text-sm font-medium">Scheduled Time</p>
+          <div class="text-muted-foreground space-y-1 text-sm">
+            <p>
+              Starts: {formatDateTime(selectedAppointment.startsOn).date} at {formatDateTime(
+                selectedAppointment.startsOn,
+              ).time}
+            </p>
+            <p>
+              Ends: {formatDateTime(selectedAppointment.endsOn).date} at {formatDateTime(
+                selectedAppointment.endsOn,
+              ).time}
+            </p>
+          </div>
+        </div>
+      {/if}
     </div>
     <Dialog.Footer>
       <Button variant="outline" onclick={() => (showConfirmDialog = false)}>Keep</Button>

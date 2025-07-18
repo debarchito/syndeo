@@ -4,37 +4,68 @@
   import { enhance } from "$app/forms";
   import { goto } from "$app/navigation";
   import * as Lucide from "@lucide/svelte";
-  import type { DateRange } from "bits-ui";
   import * as Card from "$lib/components/ui/card/index.js";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { redirectToMeOnSignIn } from "$lib/customUtils.js";
   import * as Alert from "$lib/components/ui/alert/index.js";
+  import { Button } from "$lib/components/ui/button/index.js";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
   import { Textarea } from "$lib/components/ui/textarea/index.js";
+  import { Calendar } from "$lib/components/ui/calendar/index.js";
   import { LightSwitch } from "$lib/components/ui/light-switch/index.js";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
-  import { Button, buttonVariants } from "$lib/components/ui/button/index.js";
-  import { RangeCalendar } from "$lib/components/ui/range-calendar/index.js";
   import { DateFormatter, type DateValue, getLocalTimeZone, today } from "@internationalized/date";
 
-  let { data } = $props();
+  interface Teacher {
+    id: string;
+    name: string;
+    displayName?: string;
+    description?: string;
+    expand?: {
+      tags?: Tag[];
+    };
+  }
+
+  interface Tag {
+    id: string;
+    name: string;
+    type: string;
+  }
+
+  interface User {
+    id: string;
+    name: string;
+    approved?: boolean;
+  }
+
+  interface PageData {
+    status: number;
+    message?: string;
+    payload?: {
+      user?: User;
+      teacher?: Teacher;
+      target: Teacher;
+    };
+  }
+
+  let { data }: { data: PageData } = $props();
 
   const df = new DateFormatter("en-US", { dateStyle: "medium" });
 
-  let value: DateRange = $state({
-    start: today(getLocalTimeZone()),
-    end: today(getLocalTimeZone()).add({ days: 1 }),
-  });
-  let startValue: DateValue | undefined = $state(undefined);
+  let startDate: DateValue | undefined = $state(today(getLocalTimeZone()));
+  let endDate: DateValue | undefined = $state(today(getLocalTimeZone()).add({ days: 1 }));
   let description = $state("");
   let submitting = $state(false);
   let showConfirmDialog = $state(false);
   let showResultDialog = $state(false);
   let resultMessage = $state("");
   let isSuccess = $state(false);
+  let startDatePickerOpen = $state(false);
+  let endDatePickerOpen = $state(false);
 
-  const isSignedIn = data.payload?.user;
+  const isSignedIn = !!data.payload?.user;
+  const isApproved = data.payload?.user?.approved !== false;
 
   function toDateString(d?: DateValue) {
     return d?.toDate(getLocalTimeZone()).toISOString().split("T")[0];
@@ -51,7 +82,9 @@
   function confirmSubmit() {
     showConfirmDialog = false;
     const form = document.getElementById("appointment-form") as HTMLFormElement;
-    form.requestSubmit();
+    if (form) {
+      form.requestSubmit();
+    }
   }
 
   function getTagVariant(type: string) {
@@ -79,18 +112,6 @@
 </svelte:head>
 
 {#if data.status === 200 && data.payload}
-  {#if data.payload.user && data.payload.user.approved === false}
-    <div class="pt-6">
-      <div class="flex items-center justify-center gap-3">
-        <Lucide.AlertCircle class="size-5 text-red-500 dark:text-red-400" />
-        <span class="text-sm font-medium text-red-500 dark:text-red-400">
-          Your profile is pending approval. Dashboard and the ability to book appointments is
-          locked.
-        </span>
-      </div>
-    </div>
-  {/if}
-
   <div class="bg-background min-h-screen">
     <div class="container mx-auto px-4 py-4 md:py-6">
       <div class="mx-auto max-w-6xl">
@@ -101,6 +122,7 @@
               variant="outline"
               size="icon"
               class="h-8 w-8 md:h-9 md:w-9"
+              aria-label="Go back to teacher list"
             >
               <Lucide.ArrowLeft class="size-3 md:size-4" />
             </Button>
@@ -111,14 +133,19 @@
             <DropdownMenu.Root>
               <DropdownMenu.Trigger>
                 {#snippet child({ props })}
-                  <Button {...props} variant="ghost" size="icon" class="h-9 w-9">
+                  <Button
+                    {...props}
+                    variant="ghost"
+                    size="icon"
+                    class="h-9 w-9"
+                    aria-label="User menu"
+                  >
                     <div
                       class="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-full text-xs"
                     >
                       {#if data.payload?.user || data.payload?.teacher}
                         {(data.payload?.user?.name ||
-                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                          (data.payload?.teacher as any).name ||
+                          data.payload?.teacher?.name ||
                           "U")[0].toUpperCase()}
                       {:else}
                         <Lucide.UserX class="size-3" />
@@ -181,7 +208,7 @@
                 <div
                   class="bg-primary/10 text-primary flex size-12 items-center justify-center rounded-full text-lg font-medium"
                 >
-                  {data.payload?.target.name[0].toUpperCase()}
+                  {data.payload?.target.name?.[0]?.toUpperCase() || "T"}
                 </div>
                 <div class="min-w-0 flex-1">
                   <h2 class="text-xl font-bold">
@@ -202,13 +229,13 @@
 
               {#if data.payload?.target.expand?.tags && data.payload?.target.expand.tags.length > 0}
                 {@const departmentTags = data.payload?.target.expand.tags.filter(
-                  (tag: { type: string }) => tag.type === "department",
+                  (tag: Tag) => tag.type === "department",
                 )}
                 {@const subjectTags = data.payload?.target.expand.tags.filter(
-                  (tag: { type: string }) => tag.type === "subject",
+                  (tag: Tag) => tag.type === "subject",
                 )}
                 {@const classTags = data.payload?.target.expand.tags.filter(
-                  (tag: { type: string }) => tag.type === "class",
+                  (tag: Tag) => tag.type === "class",
                 )}
 
                 {#if departmentTags.length > 0}
@@ -297,50 +324,95 @@
                 class="grid gap-4"
               >
                 <input type="hidden" name="recipient" value={data.payload?.target.id} />
-                <input type="hidden" name="startsOn" value={toDateString(value?.start)} />
-                <input type="hidden" name="endsOn" value={toDateString(value?.end)} />
+                <input type="hidden" name="startsOn" value={toDateString(startDate)} />
+                <input type="hidden" name="endsOn" value={toDateString(endDate)} />
 
-                <div class="grid gap-2">
-                  <label
+                <fieldset class="grid gap-4 sm:gap-3">
+                  <legend
                     class="mb-1 text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    for="date-range"
                   >
                     Select schedule
-                  </label>
-                  <Popover.Root>
-                    <Popover.Trigger
-                      class={cn(
-                        buttonVariants({ variant: "outline" }),
-                        "h-10 w-full justify-start px-3 text-left font-normal",
-                        !value && "text-muted-foreground",
-                      )}
-                      disabled={!isSignedIn}
-                    >
-                      <Lucide.Calendar class="mr-2 size-4" />
-                      {#if value?.start}
-                        {#if value.end}
-                          {df.format(value.start.toDate(getLocalTimeZone()))} – {df.format(
-                            value.end.toDate(getLocalTimeZone()),
-                          )}
-                        {:else}
-                          {df.format(value.start.toDate(getLocalTimeZone()))}
-                        {/if}
-                      {:else if startValue}
-                        {df.format(startValue.toDate(getLocalTimeZone()))}
-                      {:else}
-                        Pick a date range
-                      {/if}
-                    </Popover.Trigger>
-                    <Popover.Content class="w-auto p-0" align="start">
-                      <RangeCalendar
-                        bind:value
-                        onStartValueChange={(v) => (startValue = v)}
-                        numberOfMonths={2}
-                        minValue={today(getLocalTimeZone())}
-                      />
-                    </Popover.Content>
-                  </Popover.Root>
-                </div>
+                  </legend>
+
+                  <div class="grid gap-3 sm:grid-cols-2 sm:gap-2">
+                    <div class="grid gap-2">
+                      <span class="text-muted-foreground text-xs font-medium">Start Date</span>
+                      <Popover.Root bind:open={startDatePickerOpen}>
+                        <Popover.Trigger>
+                          {#snippet child({ props })}
+                            <Button
+                              {...props}
+                              variant="outline"
+                              class="w-full justify-start text-left font-normal"
+                              disabled={!isSignedIn || !isApproved}
+                              aria-label="Select start date"
+                            >
+                              <Lucide.Calendar class="mr-2 size-4 shrink-0" />
+                              <span class="truncate">
+                                {#if startDate}
+                                  {df.format(startDate.toDate(getLocalTimeZone()))}
+                                {:else}
+                                  Pick start date
+                                {/if}
+                              </span>
+                            </Button>
+                          {/snippet}
+                        </Popover.Trigger>
+                        <Popover.Content class="w-auto p-0" align="start">
+                          <Calendar
+                            bind:value={startDate!}
+                            onValueChange={(value) => {
+                              startDate = value;
+                              if (startDate && endDate && startDate.compare(endDate) >= 0) {
+                                endDate = startDate.add({ days: 1 });
+                              }
+                              startDatePickerOpen = false;
+                            }}
+                            minValue={today(getLocalTimeZone())}
+                          />
+                        </Popover.Content>
+                      </Popover.Root>
+                    </div>
+
+                    <div class="grid gap-2">
+                      <span class="text-muted-foreground text-xs font-medium">End Date</span>
+                      <Popover.Root bind:open={endDatePickerOpen}>
+                        <Popover.Trigger>
+                          {#snippet child({ props })}
+                            <Button
+                              {...props}
+                              variant="outline"
+                              class="w-full justify-start text-left font-normal"
+                              disabled={!isSignedIn || !startDate || !isApproved}
+                              aria-label="Select end date"
+                            >
+                              <Lucide.Calendar class="mr-2 size-4 shrink-0" />
+                              <span class="truncate">
+                                {#if endDate}
+                                  {df.format(endDate.toDate(getLocalTimeZone()))}
+                                {:else}
+                                  Pick end date
+                                {/if}
+                              </span>
+                            </Button>
+                          {/snippet}
+                        </Popover.Trigger>
+                        <Popover.Content class="w-auto p-0" align="start">
+                          <Calendar
+                            value={endDate}
+                            onValueChange={(value) => {
+                              endDate = value;
+                              endDatePickerOpen = false;
+                            }}
+                            minValue={startDate
+                              ? startDate.add({ days: 1 })
+                              : today(getLocalTimeZone()).add({ days: 1 })}
+                          />
+                        </Popover.Content>
+                      </Popover.Root>
+                    </div>
+                  </div>
+                </fieldset>
 
                 <div class="grid gap-2">
                   <label
@@ -356,14 +428,14 @@
                     bind:value={description}
                     placeholder="Give the teacher some context about your appointment request..."
                     class="max-h-[300px] min-h-[100px]"
-                    disabled={!isSignedIn}
+                    disabled={!isSignedIn || !isApproved}
                   />
                 </div>
 
                 <Button
                   type="button"
                   onclick={handleSubmit}
-                  disabled={submitting || !value?.start || !value?.end || !isSignedIn}
+                  disabled={submitting || !startDate || !endDate || !isSignedIn || !isApproved}
                   class="w-full transition-all hover:scale-105"
                 >
                   {#if submitting}
@@ -375,7 +447,7 @@
                   {/if}
                 </Button>
 
-                {#if !data.payload?.user}
+                {#if data.payload.teacher}
                   <Alert.Root>
                     <Lucide.CircleAlert />
                     <Alert.Title>Students only!</Alert.Title>
@@ -383,13 +455,22 @@
                       Only students can send appointments to teachers.
                     </Alert.Description>
                   </Alert.Root>
-                {:else if !isSignedIn}
+                {:else if !data.payload?.user}
                   <Alert.Root>
                     <Lucide.CircleAlert />
                     <Alert.Title>Sign in to continue</Alert.Title>
                     <Alert.Description class="flex items-center gap-1">
                       You must be signed in to request an appointment.
                       <a href={redirectToMeOnSignIn(page.url)} class="underline"> Sign in </a>
+                    </Alert.Description>
+                  </Alert.Root>
+                {:else if !isApproved}
+                  <Alert.Root variant="destructive">
+                    <Lucide.CircleAlert />
+                    <Alert.Title>Account pending approval</Alert.Title>
+                    <Alert.Description>
+                      Your account is pending approval. You cannot request appointments until
+                      approved.
                     </Alert.Description>
                   </Alert.Root>
                 {/if}
@@ -419,9 +500,9 @@
         <div class="space-y-2">
           <p class="text-sm font-medium">Schedule:</p>
           <p class="text-muted-foreground text-sm">
-            {#if value?.start && value?.end}
-              {df.format(value.start.toDate(getLocalTimeZone()))} – {df.format(
-                value.end.toDate(getLocalTimeZone()),
+            {#if startDate && endDate}
+              {df.format(startDate.toDate(getLocalTimeZone()))} – {df.format(
+                endDate.toDate(getLocalTimeZone()),
               )}
             {/if}
           </p>
@@ -429,7 +510,9 @@
         {#if description}
           <div class="space-y-2">
             <p class="text-sm font-medium">Description:</p>
-            <p class="text-muted-foreground text-sm">{description.slice(0, 50)}...</p>
+            <p class="text-muted-foreground text-sm">
+              {description.length > 50 ? description.slice(0, 50) + "..." : description}
+            </p>
           </div>
         {/if}
       </div>

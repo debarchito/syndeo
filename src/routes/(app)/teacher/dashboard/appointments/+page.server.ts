@@ -1,6 +1,7 @@
 import { redirectToMeOnSignIn } from "$lib/customUtils";
 import type { PageServerLoad, Actions } from "./$types";
 import { redirect, fail } from "@sveltejs/kit";
+import isDate from "validator/lib/isDate";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
   if (locals.user) {
@@ -39,7 +40,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 };
 
 export const actions: Actions = {
-  default: async ({ request, locals }) => {
+  "schedule-action": async ({ request, locals }) => {
     if (!locals.teacher) {
       return fail(401, { message: "Unauthorized." });
     }
@@ -83,6 +84,43 @@ export const actions: Actions = {
       locals.logger.error(err);
 
       return fail(500, { error: "Failed to update appointment." });
+    }
+  },
+  "update-schedule": async ({ request, locals }) => {
+    if (!locals.teacher) {
+      return fail(401, { message: "Unauthorized." });
+    }
+
+    const formData = await request.formData();
+    const id = formData.get("id")?.toString();
+    const startsOn = formData.get("startsOn")?.toString();
+    const endsOn = formData.get("endsOn")?.toString();
+
+    if (!id || !startsOn || !endsOn) {
+      return fail(400, { message: "Missing id, startsOn, or endsOn." });
+    }
+
+    if (!isDate(startsOn) || !isDate(endsOn)) {
+      return fail(400, { message: "Invalid date format for startsOn or endsOn." });
+    }
+
+    try {
+      const appointment = await locals.pb.collection("appointments").getOne(id);
+
+      if (appointment.recipient !== locals.teacher.id) {
+        return fail(403, { message: "You can only update appointments you're the recipient of." });
+      }
+
+      await locals.pb.collection("appointments").update(id, {
+        startsOn,
+        endsOn,
+      });
+
+      return { message: "Appointment schedule updated successfully." };
+    } catch (err) {
+      locals.logger.error(err);
+
+      return fail(500, { error: "Failed to update appointment schedule." });
     }
   },
 };
