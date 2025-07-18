@@ -46,6 +46,13 @@ export const actions: Actions = {
       return fail(400, { message: "Descripion can be at most 500 chars." });
     }
 
+    if (!locals.user.approved) {
+      return fail(400, {
+        message:
+          "Your profile is pending approval. Dashboard and the ability to book appointments is locked.",
+      });
+    }
+
     try {
       await locals.pb.collection("appointments").create({
         sender: locals.user.id,

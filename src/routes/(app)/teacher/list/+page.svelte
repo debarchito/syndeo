@@ -97,7 +97,7 @@
     <div class="flex items-center justify-center gap-3">
       <Lucide.AlertCircle class="size-5 text-red-500 dark:text-red-400" />
       <span class="text-sm font-medium text-red-500 dark:text-red-400">
-        Your profile is pending approval. Dashboard is locked.
+        Your profile is pending approval. Dashboard and the ability to book appointments is locked.
       </span>
     </div>
   </div>

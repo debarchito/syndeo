@@ -79,6 +79,18 @@
 </svelte:head>
 
 {#if data.status === 200 && data.payload}
+  {#if data.payload.user && data.payload.user.approved === false}
+    <div class="pt-6">
+      <div class="flex items-center justify-center gap-3">
+        <Lucide.AlertCircle class="size-5 text-red-500 dark:text-red-400" />
+        <span class="text-sm font-medium text-red-500 dark:text-red-400">
+          Your profile is pending approval. Dashboard and the ability to book appointments is
+          locked.
+        </span>
+      </div>
+    </div>
+  {/if}
+
   <div class="bg-background min-h-screen">
     <div class="container mx-auto px-4 py-4 md:py-6">
       <div class="mx-auto max-w-6xl">
