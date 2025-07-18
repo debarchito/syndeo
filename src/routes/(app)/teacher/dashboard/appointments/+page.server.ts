@@ -27,8 +27,6 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     sort: "-created",
   });
 
-  locals.logger.info(appointments);
-
   return {
     teacher: locals.teacher,
     activeAppointments: appointments.items,
@@ -49,6 +47,7 @@ export const actions: Actions = {
     const formData = await request.formData();
     const action = formData.get("action")?.toString();
     const id = formData.get("id")?.toString();
+    const senderId = formData.get("senderId")?.toString();
 
     if (!action || !id) {
       return fail(400, { message: "Missing action or id." });
@@ -59,13 +58,29 @@ export const actions: Actions = {
     }
 
     try {
+      const appointment = await locals.pb.collection("appointments").getOne(id, {
+        expand: "sender",
+      });
+
+      if (appointment.expand?.sender.id !== senderId) {
+        return fail(400, { message: "Sender ID mismatch." });
+      }
+
       const status = action === "accept" ? "accepted" : "rejected";
 
       await locals.pb.collection("appointments").update(id, { status });
 
+      if (status === "accepted") {
+        await locals.pb.collection("rooms").create({
+          name: `${locals.teacher.name}-to-${appointment.expand?.sender.name}`.slice(0, 255),
+          appointer: senderId,
+          appointee: locals.teacher.id,
+        });
+      }
+
       return { message: `Appointment ${status} successfully.` };
-    } catch (error) {
-      locals.logger.error("Error updating appointment:", error);
+    } catch (err) {
+      locals.logger.error(err);
 
       return fail(500, { error: "Failed to update appointment." });
     }

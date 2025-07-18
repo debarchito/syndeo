@@ -20,14 +20,11 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
   const page = Number(url.searchParams.get("p")) || 1;
   const perPage = Number(url.searchParams.get("n")) || 10;
-
   const appointments = await locals.pb.collection("appointments").getList(page, perPage, {
     filter: `sender = "${locals.user.id}" && status = "${status}"`,
     expand: "recipient",
     sort: "-created",
   });
-
-  locals.logger.info(appointments);
 
   return {
     user: locals.user,

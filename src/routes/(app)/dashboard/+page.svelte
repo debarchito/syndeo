@@ -136,7 +136,7 @@
                   <Button
                     variant="outline"
                     class="w-full"
-                    onclick={() => goto("/dashboard/messages")}
+                    onclick={() => goto("/dashboard/message/list")}
                   >
                     <Lucide.MessageCircle class="mr-2 size-4" />
                     View Messages

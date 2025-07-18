@@ -267,6 +267,7 @@
                   >
                     <input type="hidden" name="action" value={selectedAction} />
                     <input type="hidden" name="id" value={appointment.id} />
+                    <input type="hidden" name="senderId" value={appointment.expand?.sender.id} />
                   </form>
                 </Card.Content>
               </Card.Root>
