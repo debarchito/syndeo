@@ -69,14 +69,14 @@
                   <div
                     class="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-full text-sm"
                   >
-                    {data.user?.name[0].toUpperCase()}
+                    {data.teacher?.name[0].toUpperCase()}
                   </div>
                 </Button>
               {/snippet}
             </DropdownMenu.Trigger>
             <DropdownMenu.Content class="w-56" align="end">
               <DropdownMenu.Label>
-                Signed in as @{data.user?.name}
+                Signed in as @{data.teacher?.name}
               </DropdownMenu.Label>
               <DropdownMenu.Separator />
               <DropdownMenu.Item>
@@ -137,7 +137,7 @@
           {#each data.activeRooms as room (room.id)}
             <Card.Root class="transition-shadow duration-200 hover:shadow-lg">
               <Card.Content class="p-4 md:p-6">
-                <a class="block" href={`/dashboard/message/r/${room.id}`}>
+                <a class="block" href={`/teacher/dashboard/message/r/${room.id}`}>
                   <div class="flex items-start gap-4">
                     <div
                       class="bg-primary/10 text-primary flex size-12 flex-shrink-0 items-center justify-center rounded-full"

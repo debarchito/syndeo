@@ -9,9 +9,9 @@
   import { redirectToMeOnSignIn } from "$lib/customUtils.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import * as Pagination from "$lib/components/ui/pagination/index.js";
   import { LightSwitch } from "$lib/components/ui/light-switch/index.js";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
-  import * as Pagination from "$lib/components/ui/pagination/index.js";
 
   const { data } = $props();
 
