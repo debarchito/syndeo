@@ -3,19 +3,19 @@
 -->
 
 <script lang="ts">
-  import { Dialog as DialogPrimitive } from "bits-ui";
+  import { Command as CommandPrimitive } from "bits-ui";
   import { cn } from "$lib/utils.js";
 
   let {
     ref = $bindable(null),
     class: className,
     ...restProps
-  }: DialogPrimitive.TitleProps = $props();
+  }: CommandPrimitive.SeparatorProps = $props();
 </script>
 
-<DialogPrimitive.Title
+<CommandPrimitive.Separator
   bind:ref
-  data-slot="dialog-title"
-  class={cn("text-lg leading-none font-semibold", className)}
+  data-slot="command-separator"
+  class={cn("bg-border -mx-1 h-px", className)}
   {...restProps}
 />

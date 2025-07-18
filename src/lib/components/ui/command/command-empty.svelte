@@ -3,19 +3,19 @@
 -->
 
 <script lang="ts">
-  import { Dialog as DialogPrimitive } from "bits-ui";
+  import { Command as CommandPrimitive } from "bits-ui";
   import { cn } from "$lib/utils.js";
 
   let {
     ref = $bindable(null),
     class: className,
     ...restProps
-  }: DialogPrimitive.TitleProps = $props();
+  }: CommandPrimitive.EmptyProps = $props();
 </script>
 
-<DialogPrimitive.Title
+<CommandPrimitive.Empty
   bind:ref
-  data-slot="dialog-title"
-  class={cn("text-lg leading-none font-semibold", className)}
+  data-slot="command-empty"
+  class={cn("py-6 text-center text-sm", className)}
   {...restProps}
 />

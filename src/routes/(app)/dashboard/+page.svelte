@@ -129,7 +129,7 @@
                       <Lucide.MessageCircle class="size-5" />
                     </div>
                     <div>
-                      <h3 class="font-semibold">Messages</h3>
+                      <h3 class="font-semibold">My Messages</h3>
                       <p class="text-muted-foreground text-xs">Chat with teachers</p>
                     </div>
                   </div>

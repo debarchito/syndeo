@@ -3,19 +3,19 @@
 -->
 
 <script lang="ts">
-  import { Dialog as DialogPrimitive } from "bits-ui";
+  import { Avatar as AvatarPrimitive } from "bits-ui";
   import { cn } from "$lib/utils.js";
 
   let {
     ref = $bindable(null),
     class: className,
     ...restProps
-  }: DialogPrimitive.TitleProps = $props();
+  }: AvatarPrimitive.RootProps = $props();
 </script>
 
-<DialogPrimitive.Title
+<AvatarPrimitive.Root
   bind:ref
-  data-slot="dialog-title"
-  class={cn("text-lg leading-none font-semibold", className)}
+  data-slot="avatar"
+  class={cn("relative flex size-8 shrink-0 overflow-hidden rounded-full", className)}
   {...restProps}
 />
