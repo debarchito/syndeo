@@ -92,6 +92,17 @@
   <title>Explore teachers | syndeo.</title>
 </svelte:head>
 
+{#if data.user && data.user.approved === false}
+  <div class="pt-6">
+    <div class="flex items-center justify-center gap-3">
+      <Lucide.AlertCircle class="size-5 text-red-500 dark:text-red-400" />
+      <span class="text-sm font-medium text-red-500 dark:text-red-400">
+        Your profile is pending approval. Dashboard is locked.
+      </span>
+    </div>
+  </div>
+{/if}
+
 <div class="flex flex-col items-center justify-center gap-4 p-4 md:gap-6 md:p-10">
   <div class="flex w-full max-w-4xl flex-col gap-4 md:gap-6">
     <div class="flex items-center justify-between text-4xl font-medium select-none md:text-6xl">

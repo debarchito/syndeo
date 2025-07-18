@@ -11,6 +11,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     return redirect(307, redirectToMeOnSignIn(url));
   }
 
+  if (!locals.user.approved) {
+    return redirect(307, "/teacher/list");
+  }
+
   return {
     user: locals.user,
   };

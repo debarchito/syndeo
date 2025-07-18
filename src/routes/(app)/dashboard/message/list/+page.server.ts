@@ -11,6 +11,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     return redirect(307, redirectToMeOnSignIn(url));
   }
 
+  if (!locals.user.approved) {
+    return redirect(307, "/teacher/list");
+  }
+
   const page = Number(url.searchParams.get("p")) || 1;
   const perPage = Number(url.searchParams.get("n")) || 10;
   const rooms = await locals.pb.collection("rooms").getList(page, perPage, {

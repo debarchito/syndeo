@@ -1,13 +1,18 @@
+import { redirectToMeOnSignIn } from "$lib/customUtils";
 import type { PageServerLoad, Actions } from "./$types";
 import { env } from "$env/dynamic/private";
 import { redirect } from "@sveltejs/kit";
 
-export const load: PageServerLoad = async ({ locals, request, params }) => {
+export const load: PageServerLoad = async ({ locals, request, params, url }) => {
   if (locals.teacher) {
     return redirect(307, "/teacher/dashboard/message/list");
   }
 
   if (!locals.user) {
+    return redirect(307, redirectToMeOnSignIn(url));
+  }
+
+  if (!locals.user.approved) {
     return redirect(307, "/teacher/list");
   }
 
