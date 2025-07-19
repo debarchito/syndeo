@@ -18,6 +18,7 @@ text. **DO NOT** share any sensitive information on **syndeo.** instances.
   [shadcn-svelte-extras](https://www.shadcn-svelte-extras.com) for UI design.
 - [PocketBase](https://pocketbase.io) for real-time database, authentication,
   and admin dashboard.
+- [Express](https://expressjs.com/) + Node HTTPS to serve the website.
 
 ### 2. Some future considerations
 
