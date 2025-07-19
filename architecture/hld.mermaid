@@ -1,0 +1,56 @@
+graph TD
+
+User[User] -->|Visit Site| SvelteKit
+
+subgraph Frontend
+    SvelteKit[SvelteKit: Routes and Pages]
+    PBClient[PocketBase Client]
+end
+
+User -->|Sign in / Sign up| PBClient
+SvelteKit --> PBClient
+
+PBClient -->|Check Session| PocketBase
+PBClient -->|Fetch Teachers & Tags| PocketBase
+PBClient -->|"Book Appointment (only if approved)"| PocketBase
+PBClient -->|View Appointment Status| PocketBase
+PBClient -->|"Send & Fetch Messages (after room created)"| PocketBase
+
+subgraph Backend
+    PocketBase[PocketBase API & Dashboard]
+    Admin["Admin / Superuser"]
+    PBUsers[Users Collection]
+    PBTeachers[Teachers Collection]
+    PBTags[Tags Collection]
+    PBAppointments[Appointments Collection]
+    PBRooms[Rooms Collection]
+    PBMessages[Messages Collection]
+end
+
+PocketBase --> PBUsers
+PocketBase --> PBTeachers
+PocketBase --> PBTags
+PocketBase --> PBAppointments
+PocketBase --> PBRooms
+PocketBase --> PBMessages
+
+PBUsers -->|"creates (only if approved)"| PBAppointments
+PBAppointments -->|linked to| PBTeachers
+PBTeachers -->|has| PBTags
+
+PBAppointments -->|"State: pending (default)"| PBAppointments
+PBAppointments -->|"State: approved (teacher accepts)"| PBAppointments
+PBAppointments -->|"State: rescheduled (teacher changes)"| PBAppointments
+PBAppointments -->|"State: cancelled (user cancels)"| PBAppointments
+PBAppointments -->|"State: rejected (teacher declines)"| PBAppointments
+
+PBAppointments -->|"on approved → creates room"| PBRooms
+PBRooms -->|linked to| PBAppointments
+PBMessages -->|belongs to| PBRooms
+
+PBRooms -->|"Only linked user & teacher can send messages"| PBMessages
+PBRooms -->|"Real-time messages via PocketBase API"| PBMessages
+
+Admin -->|Create & Manage| PBTeachers
+Admin -->|Create & Manage| PBTags
+Admin -->|"Approve Users (approved boolean)"| PBUsers

@@ -1,0 +1,83 @@
+erDiagram
+
+users ||--o{ messages : sends
+users ||--o{ appointments : creates
+users ||--o{ rooms : joins
+
+teachers ||--o{ messages : sends
+teachers ||--o{ rooms : joins
+teachers ||--o{ tags : has
+teachers ||--o{ appointments : edits
+
+rooms ||--o{ messages : contains
+appointments ||--|| rooms : creates
+
+tags {
+    text id PK
+    text name
+    enum type
+    autodate created
+    autodate updated
+}
+
+teachers {
+    text id PK
+    hash password
+    text tokenKey
+    email email
+    boolean emailVisbility
+    boolean verified
+    text name
+    text displayName
+    text description
+    relation_mul tags
+    autodate created
+    autodate updated
+}
+
+users {
+    text id PK
+    hash password
+    text tokenKey
+    email email
+    boolean emailVisbility
+    boolean verified
+    text name
+    text displayName
+    autodate created
+    autodate updated
+}
+
+appointments {
+    text id PK
+    relation sender FK
+    relation recipient FK
+    text description
+    date startsOn
+    date endsOn
+    enum status
+    autodate created
+    autodate updated
+}
+
+rooms {
+    text id PK
+    text name
+    relation appointer FK
+    relation appointee FK
+    relation appointment FK
+    autodate created
+    autodate updated
+}
+
+messages {
+    text id PK
+    text room FK
+    text content
+    relation_nullable from_user FK
+    relation_nullable to_teacher FK
+    relation_nullable from_teacher FK
+    relation_nullable to_user FK
+    autodate created
+    autodate updated
+}
