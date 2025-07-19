@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-  <title>Welcome to ping.</title>
+  <title>Welcome to syndeo.</title>
 </svelte:head>
 
 <div class="flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
